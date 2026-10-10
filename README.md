@@ -66,8 +66,8 @@ Không cần PostgreSQL/MinIO khi chạy trực tiếp: mặc định SQLite + f
 
 1. **Gửi PDF:** môn/chủ đề, đối tượng, thời lượng, số slide và yêu cầu riêng. Kiểm tra định dạng, dung lượng, mật khẩu và số trang.
 2. **Đọc nguồn:** PyMuPDF trích văn bản/bảng/hình và bbox từng trang; OCR chỉ trang thiếu text. PDF, ảnh và `ContentUnit` là nguồn chuẩn. Markdown theo trang là bản dẫn xuất có evidence ID, không được dùng để suy đoán số trang. Cây kiến thức hiện được nhóm theo heading, có confidence thấp khi phải dùng heuristic.
-3. **Lead:** một lượt AI tạo cả giáo án và nội dung slide từ nguồn đã chọn. Bố cục được chọn bằng Python; không gọi model thiết kế riêng.
-4. **Render:** DeckKit/lint dựng và kiểm tra slide từ bốn bố cục cố định. Không thực thi Python do model sinh.
+3. **Lead:** một lượt AI tạo giáo án, các phần kiến thức K, nội dung slide và gợi ý bố cục theo nội dung từ nguồn đã chọn. Python chọn bố cục dự phòng khi cần.
+4. **Render:** DeckKit/lint dựng và kiểm tra slide theo các bố cục đã hỗ trợ. Không thực thi Python do model sinh.
 5. **Script:** sau render, sinh lời giảng theo nhóm tối đa 8 slide mỗi lượt, kèm bảng ảnh của nhóm, hoạt động liên quan, nguồn và tiêu đề trước/sau. Chỉ sinh lại script bị mất hiệu lực, giữ lời giảng giáo viên sửa trực tiếp.
 6. **Kiểm tra:** một lượt AI đánh giá cả sư phạm, nội dung, câu hỏi và bản render. Bốn tiêu chí vẫn có kết quả riêng nhưng không phải các Peer độc lập. Validator nguồn/cấu trúc và lint chạy bằng code. Mặc định **không tự sửa**; có thể bật tối đa hai vòng bằng `MAIC_MAX_AUTO_ROUNDS`.
 7. **Giáo viên:** sửa trực tiếp hoặc yêu cầu AI sửa → revision mới → phản biện lại. Không duyệt revision cũ, khi đang xử lý, hoặc còn `blocked`. Finding `revise` cần sửa hoặc ghi lý do chấp nhận riêng.
@@ -81,7 +81,7 @@ Luồng mới và ngân sách được mô tả trong [LANGGRAPH_MINIMAL.md](LAN
 Lượt đầu cần `2 + ceil(số slide / 8)` lần gọi AI: với 8 slide là **3 lượt**, so với 15 lượt của luồng cũ.
 Đây là số lượt theo cấu trúc luồng, không phải kết quả đo token/chi phí API thật.
 Các giá trị mặc định: context 4.000 token; input ước tính mỗi lượt 32.000; output mỗi lượt tối đa 12.000;
-mỗi job tối đa 12 lượt, 100.000 input và 40.000 output token. `.env` hiện có sẽ ghi đè mặc định;
+mỗi job tối đa 90 lượt, 1.000.000 input và 40.000 output token. `.env` hiện có sẽ ghi đè mặc định;
 xem `.env.example` để áp dụng cấu hình mới. Khởi động lại worker/web sau khi đổi mã hoặc cấu hình.
 
 ## Cache, chi phí và khôi phục

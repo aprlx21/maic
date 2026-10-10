@@ -51,9 +51,9 @@ Mặc định không tự sửa; giáo viên quyết định sửa gì trước 
 | `MAIC_CONTEXT_TOKENS` | 4.000 | Trần văn bản nguồn ở chế độ retrieved |
 | `MAIC_MAX_CALL_INPUT_TOKENS` | 32.000 | Trần input **ước tính** mỗi lượt |
 | `MAIC_MAX_CALL_OUTPUT_TOKENS` | 12.000 | Trần output gửi cho provider |
-| `MAIC_MAX_INPUT_TOKENS` | 100.000 | Ngân sách input mỗi job |
+| `MAIC_MAX_INPUT_TOKENS` | 1.000.000 | Ngân sách input mỗi job |
 | `MAIC_MAX_OUTPUT_TOKENS` | 40.000 | Ngân sách output mỗi job |
-| `MAIC_MAX_MODEL_CALLS` | 12 | Số lượt tối đa, tính cả lượt lỗi |
+| `MAIC_MAX_MODEL_CALLS` | 90 | Số lượt tối đa, tính cả lượt lỗi |
 | `MAIC_MAX_AUTO_ROUNDS` | 0 | Có thể bật 1–2; mặc định chờ giáo viên |
 | `MAIC_SCRIPT_BATCH_SIZE` | 8 | Số script tối đa trong một lượt |
 | `MAIC_MAX_JOB_SECONDS` | 1.800 | Ngân sách thời gian xử lý |
