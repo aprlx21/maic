@@ -1,0 +1,9 @@
+.venv
+.git
+data
+vendor/slides_maker
+frontend/node_modules
+frontend/dist
+__pycache__
+.env
+.pytest_cache

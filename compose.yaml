@@ -1,0 +1,79 @@
+x-app: &app
+  build: .
+  restart: unless-stopped
+  environment: &app-environment
+    MAIC_MODE: ${MAIC_MODE:-demo}
+    MAIC_MODEL: ${MAIC_MODEL:-gpt-6-luna}
+    MAIC_MAX_AUTO_ROUNDS: ${MAIC_MAX_AUTO_ROUNDS:-0}
+    MAIC_MAX_MODEL_CALLS: ${MAIC_MAX_MODEL_CALLS:-12}
+    MAIC_MAX_INPUT_TOKENS: ${MAIC_MAX_INPUT_TOKENS:-100000}
+    MAIC_MAX_OUTPUT_TOKENS: ${MAIC_MAX_OUTPUT_TOKENS:-40000}
+    MAIC_MAX_CALL_INPUT_TOKENS: ${MAIC_MAX_CALL_INPUT_TOKENS:-32000}
+    MAIC_MAX_CALL_OUTPUT_TOKENS: ${MAIC_MAX_CALL_OUTPUT_TOKENS:-12000}
+    MAIC_CONTEXT_TOKENS: ${MAIC_CONTEXT_TOKENS:-4000}
+    MAIC_SCRIPT_BATCH_SIZE: ${MAIC_SCRIPT_BATCH_SIZE:-8}
+    MAIC_IMAGE_MODEL: ${MAIC_IMAGE_MODEL:-gpt-image-2}
+    MAIC_MAX_SLIDE_IMAGES: ${MAIC_MAX_SLIDE_IMAGES:-6}
+    MAIC_MAX_AI_IMAGES: ${MAIC_MAX_AI_IMAGES:-2}
+    MAIC_MAX_JOB_SECONDS: ${MAIC_MAX_JOB_SECONDS:-1800}
+    MAIC_DATABASE_URL: postgresql+psycopg://maic:${POSTGRES_PASSWORD:-maic-local-development}@postgres/maic
+    MAIC_CHECKPOINT_URL: postgresql://maic:${POSTGRES_PASSWORD:-maic-local-development}@postgres/maic
+    MAIC_DATA_DIR: /app/data
+    MAIC_STORAGE: minio
+    MAIC_MINIO_ENDPOINT: minio:9000
+    MAIC_MINIO_ACCESS_KEY: maic
+    MAIC_MINIO_SECRET_KEY: ${MINIO_PASSWORD:-maic-local-development}
+    MAIC_TESSDATA_PREFIX: /usr/share/tesseract-ocr/5/tessdata
+    MAIC_INPUT_USD_PER_MILLION: ${MAIC_INPUT_USD_PER_MILLION:-}
+    MAIC_CACHED_INPUT_USD_PER_MILLION: ${MAIC_CACHED_INPUT_USD_PER_MILLION:-}
+    MAIC_OUTPUT_USD_PER_MILLION: ${MAIC_OUTPUT_USD_PER_MILLION:-}
+  volumes:
+    - work:/app/data
+  depends_on:
+    postgres:
+      condition: service_healthy
+    minio:
+      condition: service_healthy
+services:
+  web:
+    <<: *app
+    ports:
+      - "${MAIC_BIND:-127.0.0.1}:8000:8000"
+  worker:
+    <<: *app
+    command: ["python", "-m", "app.worker"]
+    environment:
+      <<: *app-environment
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  postgres:
+    image: postgres:16-bookworm
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: maic
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-maic-local-development}
+      POSTGRES_DB: maic
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U maic"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+  minio:
+    image: quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: maic
+      MINIO_ROOT_PASSWORD: ${MINIO_PASSWORD:-maic-local-development}
+    volumes:
+      - objects:/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 3s
+      timeout: 3s
+      retries: 20
+volumes:
+  postgres:
+  objects:
+  work:
